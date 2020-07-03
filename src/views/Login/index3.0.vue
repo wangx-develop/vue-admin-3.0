@@ -20,10 +20,7 @@
         class="login-form"
         size="medium "
       >
-        <el-form-item
-          prop="username"
-          class="item-form"
-        >
+        <el-form-item prop="username" class="item-form">
           <label for="username">邮箱</label>
           <el-input
             id="username"
@@ -33,10 +30,7 @@
           ></el-input>
         </el-form-item>
 
-        <el-form-item
-          prop="password"
-          class="item-form"
-        >
+        <el-form-item prop="password" class="item-form">
           <label for="password">密码</label>
           <el-input
             id="password"
@@ -64,10 +58,7 @@
           ></el-input>
         </el-form-item>
 
-        <el-form-item
-          prop="code"
-          class="item-form"
-        >
+        <el-form-item prop="code" class="item-form">
           <label for="code">验证码</label>
           <el-row :gutter="10">
             <el-col :span="15">
@@ -85,7 +76,8 @@
                 class="block"
                 @click="getSms()"
                 :disabled="codeButton.status"
-              >{{ codeButton.text }}</el-button>
+                >{{ codeButton.text }}</el-button
+              >
             </el-col>
           </el-row>
         </el-form-item>
@@ -96,7 +88,8 @@
             @click="submitForm('ruleForm')"
             class="login-btn block"
             :disabled="loginButtonStatus"
-          >{{ model === 'login' ? '登入' : '注册' }}</el-button>
+            >{{ model === 'login' ? '登入' : '注册' }}</el-button
+          >
         </el-form-item>
       </el-form>
     </div>
@@ -108,11 +101,13 @@ import sha1 from 'js-sha1'
 import { _getSms, _register, _login } from '@/api/login.js'
 import { stripscript, CheckEmail, CheckPass, CheckCode } from '@/utils/validate'
 import { reactive, ref, onMounted } from '@vue/composition-api'
-import { mapActions } from "vuex"
 
 export default {
   name: 'login',
-  data () {
+
+  setup(props, context) {
+    console.log(context)
+
     let validateUserName = (rule, value, callback) => {
       if (value === '') {
         callback(new Error('请输入邮箱'))
@@ -124,8 +119,8 @@ export default {
     }
 
     let validatepassWord = (rule, value, callback) => {
-      this.ruleForm.password = stripscript(value)
-      value = this.ruleForm.password
+      ruleForm.password = stripscript(value)
+      value = ruleForm.password
       if (value === '') {
         callback(new Error('请输入密码'))
       } else if (!CheckPass(value)) {
@@ -136,11 +131,11 @@ export default {
     }
 
     let validatepassWords = (rule, value, callback) => {
-      this.ruleForm.passwords = stripscript(value)
-      value = this.ruleForm.passwords
+      ruleForm.passwords = stripscript(value)
+      value = ruleForm.passwords
       if (value === '') {
         callback(new Error('请输入密码'))
-      } else if (value !== this.ruleForm.password) {
+      } else if (value !== ruleForm.password) {
         callback(new Error('重复密码不正确'))
       } else {
         callback()
@@ -148,8 +143,8 @@ export default {
     }
 
     let validateCode = (rule, value, callback) => {
-      this.ruleForm.code = stripscript(value)
-      value = this.ruleForm.code
+      ruleForm.code = stripscript(value)
+      value = ruleForm.code
       if (value === '') {
         return callback(new Error('请输入验证码'))
       } else if (!CheckCode(value)) {
@@ -158,60 +153,66 @@ export default {
         callback()
       }
     }
-    return {
-      menuTab: [
-        { txt: '登入', current: true, type: 'login' },
-        { txt: '注册', current: false, type: 'register' },
-      ],
-      model: 'login',
-      loginButtonStatus: true,
-      codeButton: {
-        status: false,
-        text: '获取验证码'
-      },
-      timer: null,
-      ruleForm: {
-        username: '',
-        password: '',
-        passwords: '',
-        code: '',
-      },
-      rules: {
-        username: [{ validator: validateUserName, trigger: 'blur' }],
-        password: [{ validator: validatepassWord, trigger: 'blur' }],
-        passwords: [{ validator: validatepassWords, trigger: 'blur' }],
-        code: [{ validator: validateCode, trigger: 'blur' }],
-      },
-    }
-  },
-  computed: {
 
-  },
-  methods: {
-    ...mapActions(
-      'app', ['loginAction']
-    ),
+    // 申明数据
+    /************************************************************** */
+    const menuTab = reactive([
+      { txt: '登入', current: true, type: 'login' },
+      { txt: '注册', current: false, type: 'register' },
+    ])
+
+    //模块值
+    const model = ref('login')
+
+    //登入按钮禁用状态
+    const loginButtonStatus = ref(true)
+
+    //验证码按钮禁用状态
+    const codeButton = reactive({
+      status: false,
+      text: '获取验证码',
+    })
+
+    // 倒计时
+    const timer = ref(null)
+
+    const ruleForm = reactive({
+      username: '',
+      password: '',
+      passwords: '',
+      code: '',
+    })
+
+    const rules = {
+      username: [{ validator: validateUserName, trigger: 'blur' }],
+      password: [{ validator: validatepassWord, trigger: 'blur' }],
+      passwords: [{ validator: validatepassWords, trigger: 'blur' }],
+      code: [{ validator: validateCode, trigger: 'blur' }],
+    }
+
+    //申明函数
+    /************************************************************** */
     // 切换模块
-    toggleMenu (item) {
-      this.menuTab.forEach((elem) => {
+    const toggleMenu = (item) => {
+      menuTab.forEach((elem) => {
         elem.current = false
       })
       item.current = true
-      this.model = item.type
+      model.value = item.type
 
-      this.resetFoemData()
-      this.clearCountDown()
-    },
+      resetFoemData()
+      clearCountDown()
+    }
 
     // 清除表单数据
-    resetFoemData () {
-      this.$refs.ruleForm.resetFields()
-    },
+    const resetFoemData = () => {
+      context.refs.ruleForm.resetFields()
+    }
 
     // 获取验证码
-    getSms () {
-      if (this.ruleForm.username === '') {
-        this.$message({
+    const getSms = () => {
+      if (ruleForm.username === '') {
+        context.root.$message({
           showClose: true,
           message: '邮箱不可以为空',
           type: 'error',
@@ -219,8 +220,8 @@ export default {
         return false
       }
 
-      if (!CheckEmail(this.ruleForm.username)) {
-        this.$message({
+      if (!CheckEmail(ruleForm.username)) {
+        context.root.$message({
           showClose: true,
           message: '邮箱格式有误，请重新输入',
           type: 'error',
@@ -229,12 +230,12 @@ export default {
       }
 
       let requestData = {
-        username: this.ruleForm.username,
-        module: this.model,
+        username: ruleForm.username,
+        module: model.value,
       }
 
       //修改验证码按钮状态禁用
-      this.updateButtonStatus({
+      updateButtonStatus({
         status: true,
         text: '发送中',
       })
@@ -243,131 +244,151 @@ export default {
         _getSms(requestData)
           .then((res) => {
             console.log(res.data.message)
-            this.$message({
+            context.root.$message({
               showClose: true,
               message: res.data.message,
               type: 'success',
             })
             // 启用登入或注册按钮
-            this.loginButtonStatus = false
+            loginButtonStatus.value = false
             // 倒计时
-            this.countDown(5)
+            countDown(5)
           })
           .catch((err) => {
             console.log(err)
           })
       }, 1000)
-    },
+    }
 
     // 提交表单
-    submitForm (formName) {
+    const submitForm = (formName) => {
       // vue2.0=====> this.$refs[formName]
-      this.$refs[formName].validate((valid) => {
+      context.refs[formName].validate((valid) => {
         if (valid) {
-          if (this.model === 'register') {
+          if (model.value === 'register') {
             // 注册
-            this.register()
+            register()
           } else {
             // 登入
-            this.login()
+            login()
           }
         } else {
           console.log('error submit!!')
           return false
         }
       })
-    },
+    }
 
     //登入
-    login () {
+    const login = () => {
       let reauestData = {
-        username: this.ruleForm.username,
-        password: sha1(this.ruleForm.password),
-        code: this.ruleForm.code,
+        username: ruleForm.username,
+        password: sha1(ruleForm.password),
+        code: ruleForm.code,
         module: 'login',
       }
-
-      // _login(reauestData)
-      this.loginAction(reauestData)
+      _login(reauestData)
         .then((res) => {
           console.log(res)
           let data = res.data
-          this.$message({
+          context.root.$message({
             showClose: true,
             message: data.message,
             type: 'success',
           })
 
-          this.$router.push('/console')
+          context.root.$router.push('/console')
         })
         .catch((err) => {
           console.log(err)
         })
-    },
+    }
 
     //注册
-    register () {
+    const register = () => {
       let reauestData = {
-        username: this.ruleForm.username,
-        password: sha1(this.ruleForm.password),
-        code: this.ruleForm.code,
+        username: ruleForm.username,
+        password: sha1(ruleForm.password),
+        code: ruleForm.code,
         module: 'register',
       }
       _register(reauestData)
         .then((res) => {
           console.log(res)
           let data = res.data
-          this.$message({
+          context.root.$message({
             showClose: true,
             message: data.message,
             type: 'success',
           })
-          this.toggleMenu(this.menuTab[0])
+          toggleMenu(menuTab[0])
         })
         .catch((err) => {
           console.log(err)
         })
-    },
+    }
 
     // 倒计时
-    countDown (num) {
+    const countDown = (num) => {
       let time = num
-      if (this.timer) {
-        clearInterval(this.timer)
+      if (timer.value) {
+        clearInterval(timer.value)
       }
-      this.timer = setInterval(() => {
+      timer.value = setInterval(() => {
         if (time < 0) {
-          clearInterval(this.timer)
-          this.updateButtonStatus({
+          clearInterval(timer.value)
+          updateButtonStatus({
             status: false,
             text: '重新发送',
           })
         } else {
-          this.codeButton.text = `倒计时${time}秒`
+          codeButton.text = `倒计时${time}秒`
           time--
         }
       }, 1000)
-    },
+    }
 
     // 清除倒计时
-    clearCountDown () {
-      this.updateButtonStatus({
+    const clearCountDown = () => {
+      updateButtonStatus({
         status: false,
         text: '获取验证码',
       })
-      if (this.timer) {
-        clearInterval(this.timer)
+      if (timer.value) {
+        clearInterval(timer.value)
       }
-    },
+    }
 
     // 更新按钮状态
-    updateButtonStatus (buttonStatus) {
-      this.codeButton.status = buttonStatus.status
-      this.codeButton.text = buttonStatus.text
+    const updateButtonStatus = (buttonStatus) => {
+      codeButton.status = buttonStatus.status
+      codeButton.text = buttonStatus.text
+    }
+
+    // 生命周期
+    /************************************************************** */
+    onMounted()
+
+    return {
+      menuTab,
+      model,
+      loginButtonStatus,
+      codeButton,
+      timer,
+      ruleForm,
+      rules,
+      toggleMenu,
+      submitForm,
+      onMounted,
+      getSms,
+      countDown,
     }
   },
 
-
+  data() {
+    return {}
+  },
+  methods: {},
 }
 </script>
 

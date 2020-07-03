@@ -11,7 +11,17 @@ module.exports = {
    * webpack配置,see https://github.com/vuejs/vue-cli/blob/dev/docs/webpack.md
    **/
   // eslint-disable-next-line no-unused-vars
-  chainWebpack: (config) => {},
+  chainWebpack: (config) => {
+    const svgRule = config.module.rule('svg')
+    svgRule.uses.clear()
+    svgRule
+      .use('svg-sprite-loader')
+      .loader('svg-sprite-loader')
+      .options({
+        symbolId: 'icon-[name]',
+        include: ['./src/icons'],
+      })
+  },
   // eslint-disable-next-line no-unused-vars
   configureWebpack: (config) => {
     config.resolve = {
@@ -21,6 +31,8 @@ module.exports = {
         '@': path.resolve(__dirname, './src'),
         public: path.resolve(__dirname, './public'),
         '@c': path.resolve(__dirname, './src/components'),
+        vue: 'vue/dist/vue.js',
+
         common: path.resolve(__dirname, './src/common'),
         api: path.resolve(__dirname, './src/api'),
         views: path.resolve(__dirname, './src/views'),
@@ -39,7 +51,7 @@ module.exports = {
     // css预设器配置项
     loaderOptions: {
       // 如发现 css.modules 报错，请查看这里：http://www.web-jshtml.cn/#/detailed?id=12
-      sass: {
+      scss: {
         prependData: `@import "./src/styles/main.scss";`,
       },
     },
@@ -64,7 +76,7 @@ module.exports = {
     // 设置代理
     proxy: {
       '/devApi': {
-        target: 'http://www.web-jshtml.cn/productapi', //API服务器的地址
+        target: 'http://www.web-jshtml.cn/productapi/token', //API服务器的地址
         changeOrigin: true,
         pathRewrite: {
           '^/devApi': '',

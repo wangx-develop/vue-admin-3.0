@@ -1,15 +1,15 @@
 <template>
-  <div>用户列表</div>
+  <div>信息首页</div>
 </template>
 
 <script>
 export default {
-  name: 'userIndex',
+  name: 'infoIndex',
   setup: {
 
   }
 }
 </script>
 
-<style>
+<style lang="scss" scoped>
 </style>
